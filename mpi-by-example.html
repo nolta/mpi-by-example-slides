@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MPI by example</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif';
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.25em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+        -moz-border-radius: 5px;
+        -web-border-radius: 5px;
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      pre {
+        padding-left: 1em;
+      }
+      #slideshow .slide .content code {
+        font-size: 1em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+      .digression {
+          background: #fdd;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 0.9em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 25%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 65%;
+        float: right;
+        padding-top: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle, inverse
+
+# MPI By Example
+## Mike Nolta
+### 2017 May 17
+
+---
+# What is MPI?
+
+* "MPI" stands for Message Passing Interface.
+
+* It's a library for passing messages & data between
+isolated, distributed, & parallel processes.
+
+    - *isolated*: they don't share memory
+    - *distributed*: can be running on multiple computers
+    - *parallel*: execute simultaneously
+
+* Usually used by C/C++/Fortran codes, but we'll use Python for this
+lecture (specifically the `mpi4py` module).
+
+---
+# Running an MPI job
+
+Use `mpirun` to run a job:
+
+```
+$ mpirun -np 4 hostname
+gpc-f102n001-ib0
+gpc-f102n001-ib0
+gpc-f102n001-ib0
+gpc-f102n001-ib0
+```
+
+The `-np 4` option tells `mpirun` to start 4 processes, each of which runs
+the `hostname` program.
+
+```
+$ mpirun [mpirun args] program [program args]
+```
+
+---
+# First example
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+---
+# First example (0)
+
+```python
+#!/usr/bin/env python
+
+*from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+Behind the scenes, this initializes the MPI library, and hooks all the
+processes together.
+
+---
+# First example (1)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+*comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+`comm` is a *communicator*, which is a group of processes.
+
+`COMM_WORLD` is the set of all processes in this job.
+
+---
+# First example (2)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+*size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+The *size* of a communicator is the number of processes in the group.
+
+Because we're using the WORLD communicator, this equals the number
+started by mpirun (i.e., the `-np` option).
+
+---
+# First example (3)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+*rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+The *rank* is the process index, running from `0` to `size-1`.
+
+---
+# First example (4)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+Output:
+
+```
+$ mpirun -np 3 python 1.py 
+proc 0/3
+proc 2/3
+proc 1/3
+```
+
+---
+# First example (5)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+print "proc %d/%d" % (rank, size)
+```
+
+Output:
+
+```
+$ mpirun -np 3 python 1.py 
+proc 0/3
+*proc 2/3
+proc 1/3
+```
+
+Note the lines are out of order.
+
+---
+# Second example
+
+Let's send a message from each process to the next process:
+
+<svg width="412pt" height="88pt"
+ viewBox="0.00 0.00 206.00 44.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 40)">
+<title>G</title>
+<polygon fill="white" stroke="white" points="-4,5 -4,-40 203,-40 203,5 -4,5"/>
+<!-- proc0 -->
+<g id="node1" class="node"><title>proc0</title>
+<polygon fill="#efefef" stroke="#efefef" points="54,-36 0,-36 0,-0 54,-0 54,-36"/>
+<text text-anchor="middle" x="27" y="-14.3" font-family="Times,serif" font-size="14.00">proc0</text>
+</g>
+<!-- proc1 -->
+<g id="node2" class="node"><title>proc1</title>
+<polygon fill="#efefef" stroke="#efefef" points="126,-36 72,-36 72,-0 126,-0 126,-36"/>
+<text text-anchor="middle" x="99" y="-14.3" font-family="Times,serif" font-size="14.00">proc1</text>
+</g>
+<!-- proc0&#45;&gt;proc1 -->
+<g id="edge1" class="edge"><title>proc0&#45;&gt;proc1</title>
+<path fill="none" stroke="#666666" d="M54.2812,-18C56.7377,-18 59.1942,-18 61.6507,-18"/>
+<polygon fill="#666666" stroke="#666666" points="61.7495,-21.5001 71.7495,-18 61.7495,-14.5001 61.7495,-21.5001"/>
+</g>
+<!-- proc2 -->
+<g id="node3" class="node"><title>proc2</title>
+<polygon fill="#efefef" stroke="#efefef" points="198,-36 144,-36 144,-0 198,-0 198,-36"/>
+<text text-anchor="middle" x="171" y="-14.3" font-family="Times,serif" font-size="14.00">proc2</text>
+</g>
+<!-- proc1&#45;&gt;proc2 -->
+<g id="edge2" class="edge"><title>proc1&#45;&gt;proc2</title>
+<path fill="none" stroke="#666666" d="M126.281,-18C128.738,-18 131.194,-18 133.651,-18"/>
+<polygon fill="#666666" stroke="#666666" points="133.75,-21.5001 143.75,-18 133.749,-14.5001 133.75,-21.5001"/>
+</g>
+</g>
+</svg>
+
+---
+# Second example (0)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+if rank < size - 1:
+    comm.ssend(rank, dest=rank+1)
+if rank > 0:
+    x = comm.recv(source=rank-1)
+    print "proc %d got %d" % (rank, x)
+
+```
+
+---
+# Second example (1)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+if rank < size - 1:
+*   comm.ssend(rank, dest=rank+1)
+if rank > 0:
+    x = comm.recv(source=rank-1)
+    print "proc %d got %d" % (rank, x)
+
+```
+
+Send `rank` to the process with `rank+1`.
+
+---
+# Second example (2)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+if rank < size - 1:
+    comm.ssend(rank, dest=rank+1)
+if rank > 0:
+*   x = comm.recv(source=rank-1)
+    print "proc %d got %d" % (rank, x)
+```
+
+Receive message from process `rank-1`.
+
+---
+# Second example (3)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+if rank < size - 1:
+    comm.ssend(rank, dest=rank+1)
+if rank > 0:
+    x = comm.recv(source=rank-1)
+    print "proc %d got %d" % (rank, x)
+```
+
+Output:
+```
+$ mpirun -np 3 python 2.py 
+proc 1 got 0
+proc 2 got 1
+```
+
+---
+# Third example
+
+Send messages in a ring:
+
+<svg width="412pt" height="136pt"
+ viewBox="0.00 0.00 206.00 67.96" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 63.9581)">
+<title>G</title>
+<polygon fill="white" stroke="white" points="-4,5 -4,-63.9581 203,-63.9581 203,5 -4,5"/>
+<!-- proc0 -->
+<g id="node1" class="node"><title>proc0</title>
+<polygon fill="#efefef" stroke="#efefef" points="54,-36 0,-36 0,-0 54,-0 54,-36"/>
+<text text-anchor="middle" x="27" y="-14.3" font-family="Times,serif" font-size="14.00">proc0</text>
+</g>
+<!-- proc1 -->
+<g id="node2" class="node"><title>proc1</title>
+<polygon fill="#efefef" stroke="#efefef" points="126,-36 72,-36 72,-0 126,-0 126,-36"/>
+<text text-anchor="middle" x="99" y="-14.3" font-family="Times,serif" font-size="14.00">proc1</text>
+</g>
+<!-- proc0&#45;&gt;proc1 -->
+<g id="edge1" class="edge"><title>proc0&#45;&gt;proc1</title>
+<path fill="none" stroke="#666666" d="M54.2812,-18C56.7377,-18 59.1942,-18 61.6507,-18"/>
+<polygon fill="#666666" stroke="#666666" points="61.7495,-21.5001 71.7495,-18 61.7495,-14.5001 61.7495,-21.5001"/>
+</g>
+<!-- proc2 -->
+<g id="node3" class="node"><title>proc2</title>
+<polygon fill="#efefef" stroke="#efefef" points="198,-36 144,-36 144,-0 198,-0 198,-36"/>
+<text text-anchor="middle" x="171" y="-14.3" font-family="Times,serif" font-size="14.00">proc2</text>
+</g>
+<!-- proc1&#45;&gt;proc2 -->
+<g id="edge2" class="edge"><title>proc1&#45;&gt;proc2</title>
+<path fill="none" stroke="#666666" d="M126.281,-18C128.738,-18 131.194,-18 133.651,-18"/>
+<polygon fill="#666666" stroke="#666666" points="133.75,-21.5001 143.75,-18 133.749,-14.5001 133.75,-21.5001"/>
+</g>
+<!-- proc2&#45;&gt;proc0 -->
+<g id="edge3" class="edge"><title>proc2&#45;&gt;proc0</title>
+<path fill="none" stroke="#666666" d="M153.919,-36.2173C146.154,-43.1981 136.385,-50.3571 126,-54 103.353,-61.9442 94.6471,-61.9442 72,-54 64.8603,-51.4955 58.0119,-47.3291 51.9057,-42.7013"/>
+<polygon fill="#666666" stroke="#666666" points="54.0145,-39.9032 44.0815,-36.2173 49.5479,-45.293 54.0145,-39.9032"/>
+</g>
+</g>
+</svg>
+
+---
+# Third example
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+comm.ssend(rank, dest=(rank+1)%size)
+x = comm.recv(source=(rank-1)%size)
+print "proc %d got %d" % (rank, x)
+```
+
+---
+# Third example (0)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+*comm.ssend(rank, dest=(rank+1)%size)
+*x = comm.recv(source=(rank-1)%size)
+print "proc %d got %d" % (rank, x)
+```
+
+Now all processes send and receive messages.
+
+---
+# Third example (1)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+comm.ssend(rank, dest=(rank+1)%size)
+x = comm.recv(source=(rank-1)%size)
+print "proc %d got %d" % (rank, x)
+```
+
+Output:
+```
+$ mpirun -np 3 python 3.py 
+... waiting ...
+```
+
+DEADLOCK <span style="font-size:xx-large">☠</span>
+
+---
+# Why the deadlock?
+
+* The `ssend` command waits for the message to be received before returning.
+
+* In the second example, proc2 didn't send a message and thus was ready
+to receive proc1's message.
+
+* But in the this example, all processes are waiting for the messages to be
+received.
+
+---
+# Fourth example
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+s = comm.isend(rank, dest=(rank+1)%size)
+x = comm.recv(source=(rank-1)%size)
+s.Wait()
+print "proc %d got %d" % (rank, x)
+```
+
+---
+# Fourth example
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+*s = comm.isend(rank, dest=(rank+1)%size)
+x = comm.recv(source=(rank-1)%size)
+*s.Wait()
+print "proc %d got %d" % (rank, x)
+```
+
+`isend` is *non-blocking* -- doesn't wait for send to be received before
+returning. It immediately returns a `Request` object.
+
+The `Wait` command waits for the send to complete.
+
+There's also a `Test` command to check whether the send has completed.
+
+---
+# Fourth example (1)
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+s = comm.isend(rank, dest=(rank+1)%size)
+x = comm.recv(source=(rank-1)%size)
+s.Wait()
+print "proc %d got %d" % (rank, x)
+```
+
+Output:
+```
+proc 0 got 2
+proc 1 got 0
+proc 2 got 1
+```
+
+---
+# Example Five
+
+```python
+#!/usr/bin/env python
+
+from mpi4py import MPI
+import numpy
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+sbuf = numpy.arange(rank, rank+2, dtype='i')
+rbuf = numpy.empty(2, dtype='i')
+
+s = comm.Isend(sbuf, dest=(rank+1)%size)
+comm.Recv(rbuf, source=(rank-1)%size)
+s.Wait()
+print "proc %d got %s" % (rank, repr(rbuf))
+```
+
+Output:
+```
+$ mpirun -np 3 python 5.py 
+proc 0 got array([2, 3], dtype=int32)
+proc 1 got array([0, 1], dtype=int32)
+proc 2 got array([1, 2], dtype=int32)
+```
+
+---
+# Point-to-point summary
+
+* `ssend` blocks until message received (synchronous).
+
+* `isend` doesn't block until explicitly waited for (asynchronous).
+
+* Each send must be matched with one and only one receive.
+
+---
+# Collective operations
+
+For convenience and efficiency, MPI has routines for some common
+communication patterns:
+
+* *broadcast*
+
+* *scatter*
+
+* *gather*
+
+* *allgather*
+
+* *alltoall*
+
+---
+# Crummy distributed memory diagrams
+
+```
+    memory->
+  p +-----------+          +-----------+
+  r |   |   |   |          |   |   |   |
+  o +-----------+    op    +-----------+
+  c |   |   |   |   ===>   |   |   |   |
+  | +-----------+          +-----------+
+  v |   |   |   |          |   |   |   |
+    +-----------+          +-----------+
+        before                 after
+```
+
+Each row represents a single process, and each cell is a block of memory.
+
+The first block is the state of the memory before,
+and the second after the operation.
+
+---
+# Broadcast
+
+```
+
+    +-----------+          +-----------+
+    | A |   |   |          | A |   |   |
+    +-----------+          +-----------+
+    |   |   |   |   ===>   | A |   |   |
+    +-----------+          +-----------+
+    |   |   |   |          | A |   |   |
+    +-----------+          +-----------+
+
+```
+
+```python
+data = np.empty(2)
+if rank == 0:
+    data[:] = range(2)
+comm.Bcast(data, root=0)
+```
+
+---
+# Scatter
+
+```
+
+    +-----------+          +-----------+
+    | A | B | C |          | A |   |   |
+    +-----------+          +-----------+
+    |   |   |   |   ===>   | B |   |   |
+    +-----------+          +-----------+
+    |   |   |   |          | C |   |   |
+    +-----------+          +-----------+
+
+```
+
+Example: distribute the rows of a matrix:
+
+```python
+if rank == 0:
+    sbuf = numpy.empty([size, 2])
+    sbuf.T[:,:] = range(size)
+else:
+    sbuf = None
+rbuf = np.empty(2)
+comm.Scatter(sbuf, rbuf, root=0)
+```
+
+---
+# Gather
+
+```
+
+    +-----------+          +-----------+
+    | A |   |   |          | A | B | C |
+    +-----------+          +-----------+
+    | B |   |   |   ===>   |   |   |   |
+    +-----------+          +-----------+
+    | C |   |   |          |   |   |   |
+    +-----------+          +-----------+
+
+```
+
+Example: inverse of previous example:
+
+```python
+sbuf = np.empty(2)
+sbuf[:] = rank
+if rank == 0:
+    rbuf = numpy.empty([size, 2])
+else:
+    rbuf = None
+comm.Gather(sbuf, rbuf, root=0)
+```
+
+---
+# All Gather
+
+```
+
+    +-----------+          +-----------+
+    | A |   |   |          | A | B | C |
+    +-----------+          +-----------+
+    | B |   |   |   ===>   | A | B | C |
+    +-----------+          +-----------+
+    | C |   |   |          | A | B | C |
+    +-----------+          +-----------+
+
+```
+
+---
+# All To All
+
+```
+
+    +-----------+          +-----------+
+    | A | B | C |          | A | D | G |
+    +-----------+          +-----------+
+    | D | E | F |   ===>   | B | E | H |
+    +-----------+          +-----------+
+    | G | H | I |          | C | F | I |
+    +-----------+          +-----------+
+
+```
+    </textarea>
+    <script src="remark-latest.min.js">
+    </script>
+    <script>
+        var slideshow = remark.create({
+            highlightLines: true,
+/*
+            navigation: {
+                touch: false,
+                scroll: false,
+                click: false,
+            },
+*/
+        });
+    </script>
+  </body>
+</html>
